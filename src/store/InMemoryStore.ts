@@ -30,24 +30,20 @@ export class InMemoryStore implements Store {
       .slice(-1 * limit);
   }
 
-  addChat(
-    userID: UserID,
-    name: string,
-    roomID: string,
-    message: string,
-    upvotes: UserID
-  ) {
+  addChat(userID: UserID, name: string, roomID: string, message: string) {
     const room = this.store.get(roomID);
     if (!room) {
       return;
     }
-    room.chats.push({
+    const chat = {
       id: (globalChatID++).toString(),
       userID,
       name,
       message,
       upvotes: [],
-    });
+    };
+    room.chats.push(chat);
+    return chat;
   }
 
   upVote(userID: UserID, roomID: string, chatID: string) {
@@ -57,7 +53,11 @@ export class InMemoryStore implements Store {
     }
     const chat = room.chats.find(({ id }) => id === chatID); // Did not understand how chat: Chat, and room: Room
     if (chat) {
+      if (chat.upvotes.find((x) => x === userID)) {
+        return chat;
+      }
       chat.upvotes.push(userID);
     }
+    return chat;
   }
 }
